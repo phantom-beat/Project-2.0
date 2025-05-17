@@ -1,6 +1,8 @@
 from database.db import Base
 from sqlalchemy import Column, Integer, String
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship
 
 class Usuario(Base):
     __tablename__ = 'usuarios'
@@ -12,6 +14,10 @@ class Usuario(Base):
     email = Column(String(100), unique=True, nullable=False)
     password = Column(String(255), nullable=False)
     
+
+    pacientes = relationship("Paciente", back_populates="usuario")
+    pacientes_neonatos = relationship("PacienteNeonato", back_populates="usuario")
+
     def set_password(self, password):
         self.password = generate_password_hash(password)
 

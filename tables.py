@@ -1,6 +1,14 @@
-from database.db import engine, Base
+# crear_todas_las_tablas.py
+
+from database.db import Base, engine
+
+# Importa todos los modelos explícitamente
 from models.usuario import Usuario
+from models.paciente import Paciente
+from models.paciente_neonato import PacienteNeonato
+from models.medicion import Medicion
 
-Base.metadata.create_all(bind=engine)
+# Crear todas las tablas
+Base.metadata.create_all(engine)
 
-print("¡Tablas creadas exitosamente!")
+print("✅ Todas las tablas fueron creadas correctamente.")

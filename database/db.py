@@ -1,21 +1,16 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+import os
 
+# Ruta al archivo SQLite local
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DB_PATH = os.path.join(BASE_DIR, "../data/nutriclinic.db")
 
-USER = 'root'          
-PASSWORD = 'root'  
-HOST = 'localhost'      
-PORT = '3306'           
-DATABASE = 'nutriclincIMB' 
+# Crear motor de conexión SQLite
+DATABASE_URL = f"sqlite:///{DB_PATH}"
 
-# Cadena de conexión
-DATABASE_URL = f'mysql+pymysql://{USER}:{PASSWORD}@{HOST}:{PORT}/{DATABASE}'
-
-# Motor de conexión
-engine = create_engine(DATABASE_URL, echo=True)
-
-# Sesión para interactuar con la base de datos
+engine = create_engine(DATABASE_URL, echo=True, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Base para los modelos
+# Declarative base
 Base = declarative_base()
