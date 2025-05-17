@@ -1,11 +1,17 @@
 import sys
 import os
+
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(project_root)
+
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                               QLabel, QLineEdit, QPushButton, QMessageBox)
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QPalette
 from olvidaste_tu_contrasena import ForgotPasswordWindow
 
+from models.usuario import Usuario
+from database.db import SessionLocal
 # Configuración de paths
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.append(project_root)
@@ -178,10 +184,14 @@ class LoginWindow(QMainWindow):
         password = self.password_input.text()
 
         if email.strip() and password.strip():
-            QMessageBox.information(self, "Éxito", "Inicio de sesión exitoso")
-            self.dashboard = DashboardWindow()
-            self.dashboard.show()
-            self.close()
+            exito, mensaje = autenticar_usuario(email, password)
+            if exito:
+                QMessageBox.information(self, "Éxito", "Inicio de sesión exitoso")
+                self.dashboard = DashboardWindow()
+                self.dashboard.show()
+                self.close()
+            else : 
+                QMessageBox.warning(self, "Error", mensaje)
         else:
             QMessageBox.warning(self, "Error", "Por favor ingrese email y contraseña")
     
@@ -198,6 +208,18 @@ class LoginWindow(QMainWindow):
             self.register_window.show()
         except Exception as e:
             QMessageBox.critical(self, "Error", f"No se pudo abrir la ventana de registro: {str(e)}")
+def autenticar_usuario(email, password):
+    db= SessionLocal()
+    try:
+        usuario = db.query(Usuario).filter(Usuario.email == email).first()
+        if usuario and usuario.check_password(password):
+            return True, "Inicio de sesión exitoso"
+        else:
+            return False, "Email o contraseña incorrectos"
+    except Exception as e:
+        return False, f"Error al autenticar: {str(e)}"
+    finally:
+        db.close()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -212,3 +234,4 @@ if __name__ == "__main__":
     window = LoginWindow()
     window.show()
     sys.exit(app.exec())
+
