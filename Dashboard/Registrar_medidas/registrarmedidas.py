@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import sys
 import os
 
@@ -135,3 +136,102 @@ if __name__ == "__main__":
     window = AnthropometryRegisterWindow()
     window.show()
     sys.exit(app.exec())
+=======
+import sys
+import requests
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton, QMessageBox, QDateEdit
+from PySide6.QtCore import Qt, QDate
+
+class AnthropometryRegisterWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Registro de Medidas Antropométricas")
+        self.setGeometry(100, 100, 400, 600)
+
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        layout = QVBoxLayout(central_widget)
+        central_widget.setStyleSheet("background-color: white;")
+
+        title = QLabel("Registro de Medidas Antropométricas")
+        title.setAlignment(Qt.AlignCenter)
+        title.setStyleSheet("font-size: 20px; font-weight: bold; margin: 30px 0; color: black;")
+        layout.addWidget(title)
+
+        self.fields = {}
+
+        def add_field(label_text, name, input_type="line", placeholder=""):
+            label = QLabel(label_text)
+            label.setStyleSheet("font-size: 14px; font-weight: bold; color: black;")
+            layout.addWidget(label)
+
+            if input_type == "date":
+                input_widget = QDateEdit()
+                input_widget.setDate(QDate.currentDate())
+                input_widget.setCalendarPopup(True)
+            else:
+                input_widget = QLineEdit()
+                input_widget.setPlaceholderText(placeholder)
+
+            input_widget.setFixedWidth(300)
+            input_widget.setStyleSheet("padding: 8px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; color: black;")
+            layout.addWidget(input_widget, alignment=Qt.AlignCenter)
+            layout.addSpacing(10)
+            self.fields[name] = input_widget
+
+        add_field("Fecha de evaluación", "date", input_type="date")
+        add_field("Identificación del paciente", "patient_id", placeholder="Número de documento")
+        add_field("Altura (cm)", "height", placeholder="Ej: 170")
+        add_field("Peso (kg)", "weight", placeholder="Ej: 68.5")
+        add_field("Circunferencia de cintura (cm)", "waist")
+        add_field("Circunferencia de cadera (cm)", "hip")
+        add_field("Pliegue tricipital (mm)", "triceps")
+        add_field("Pliegue subescapular (mm)", "subscapular")
+
+        submit_button = QPushButton("Guardar Medidas")
+        submit_button.setStyleSheet("""
+            QPushButton {
+                background-color: #28a745;
+                color: white;
+                padding: 10px;
+                font-size: 14px;
+                border: none;
+                border-radius: 5px;
+                width: 300px;
+            }
+            QPushButton:hover {
+                background-color: #218838;
+            }
+        """)
+        submit_button.clicked.connect(self.submit_data)
+        layout.addWidget(submit_button, alignment=Qt.AlignCenter)
+        
+
+    def submit_data(self):
+        data = {}
+        for key, widget in self.fields.items():
+            if isinstance(widget, QDateEdit):
+                data[key] = widget.date().toString("yyyy-MM-dd")
+            else:
+                value = widget.text()
+                if not value:
+                    QMessageBox.warning(self, "Campo incompleto", f"Por favor completa el campo: {key}")
+                    return
+                data[key] = value
+
+        try:
+            response = requests.post("http://localhost:5000/anthropometry", json=data)
+            if response.status_code == 200:
+                QMessageBox.information(self, "Éxito", "Datos guardados correctamente")
+                self.close()
+            else:
+                QMessageBox.warning(self, "Error", "No se pudo guardar la información")
+        except requests.exceptions.RequestException as e:
+            QMessageBox.critical(self, "Error", f"No se pudo conectar al servidor: {e}")
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = AnthropometryRegisterWindow()
+    window.show()
+    sys.exit(app.exec())
+>>>>>>> 080a14027e42dc54e33bca660d5e4c36fdaa9eac
